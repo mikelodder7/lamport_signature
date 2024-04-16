@@ -1,8 +1,8 @@
-use whirlpool::Whirlpool;
 use criterion::*;
 use lamport_signature_plus::{LamportFixedDigest, SigningKey, VerifyingKey};
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
+use whirlpool::Whirlpool;
 
 fn bench_whirlpool(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";

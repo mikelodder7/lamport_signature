@@ -1,8 +1,10 @@
-use sha3::{Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256};
 use criterion::*;
-use lamport_signature_plus::{LamportExtendableDigest, LamportFixedDigest, SigningKey, VerifyingKey};
+use lamport_signature_plus::{
+    LamportExtendableDigest, LamportFixedDigest, SigningKey, VerifyingKey,
+};
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
+use sha3::{Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256};
 
 fn bench_sha3_256(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
@@ -139,7 +141,13 @@ fn bench_shake256(c: &mut Criterion) {
     });
 }
 
-
-criterion_group!(benches, bench_sha3_256, bench_sha3_384, bench_sha3_512, bench_shake128, bench_shake256);
+criterion_group!(
+    benches,
+    bench_sha3_256,
+    bench_sha3_384,
+    bench_sha3_512,
+    bench_shake128,
+    bench_shake256
+);
 
 criterion_main!(benches);

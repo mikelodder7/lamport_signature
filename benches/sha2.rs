@@ -1,8 +1,8 @@
-use sha2::{Sha256, Sha384, Sha512};
 use criterion::*;
 use lamport_signature_plus::{LamportFixedDigest, SigningKey, VerifyingKey};
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
+use sha2::{Sha256, Sha384, Sha512};
 
 fn bench_sha256(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
@@ -84,7 +84,6 @@ fn bench_sha512(c: &mut Criterion) {
         });
     });
 }
-
 
 criterion_group!(benches, bench_sha256, bench_sha384, bench_sha512);
 
