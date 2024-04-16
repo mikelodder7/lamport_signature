@@ -24,7 +24,7 @@ pub trait LamportDigest {
         let bytes = bits / 8;
         assert_eq!(data.axes[0], bits);
         assert_eq!(data.axes[1], bytes);
-        let mut outer = MultiVec::fill([bits, bits / 8], 0);
+        let mut outer = MultiVec::fill([bits, bytes], 0);
         {
             let mut outer_iter = outer.iter_mut();
 
@@ -81,14 +81,14 @@ where
     T: Default + ExtendableOutput + Update,
 {
     fn digest_size_in_bits() -> usize {
-        64
+        512
     }
 
     fn digest(data: &[u8]) -> Vec<u8> {
         let mut hasher = T::default();
         hasher.update(data);
         let mut reader = hasher.finalize_xof();
-        let mut output = vec![0u8; 32];
+        let mut output = vec![0u8; 64];
         reader.read(&mut output);
         output
     }

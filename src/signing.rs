@@ -55,8 +55,8 @@ impl<T: LamportDigest> SigningKey<T> {
     /// use lamport_signature_plus::{LamportFixedDigest, SigningKey};
     ///
     /// const SEED: [u8; 32] = [0; 32];
-    /// let mut rng = ChaCha12Rng::from_seed(SEED);
-    /// let mut private_key = SigningKey::<LamportFixedDigest<Sha256>>::new(&mut rng);
+    /// let rng = ChaCha12Rng::from_seed(SEED);
+    /// let mut private_key = SigningKey::<LamportFixedDigest<Sha256>>::random(rng);
     /// const MESSAGE: &[u8] = b"hello, world!";
     /// assert!(private_key.sign(MESSAGE).is_ok());
     /// ```

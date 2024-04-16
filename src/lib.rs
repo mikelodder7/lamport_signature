@@ -93,7 +93,7 @@ pub use verifying::VerifyingKey;
 mod tests {
     use super::*;
     use rand::SeedableRng;
-    use sha3::{Sha3_256, Sha3_512};
+    use sha3::{Sha3_256, Sha3_512, Shake128};
     const SEED: [u8; 32] = [3u8; 32];
 
     #[test]
@@ -146,9 +146,21 @@ mod tests {
     }
 
     #[test]
-    fn sign() {
+    fn sign_fixed() {
         let rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
         let mut sk = SigningKey::<LamportFixedDigest<Sha3_256>>::random(rng);
+        let pk = VerifyingKey::from(&sk);
+
+        let message = b"hello, world!";
+        let signature = sk.sign(message).unwrap();
+        assert!(pk.verify(&signature, message).is_ok());
+        assert!(!pk.verify(&signature, b"hello, world").is_ok());
+    }
+
+    #[test]
+    fn sign_xof() {
+        let rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
+        let mut sk = SigningKey::<LamportExtendableDigest<Shake128>>::random(rng);
         let pk = VerifyingKey::from(&sk);
 
         let message = b"hello, world!";

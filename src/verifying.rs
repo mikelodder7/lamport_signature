@@ -78,7 +78,7 @@ impl<T: LamportDigest> VerifyingKey<T> {
     ///
     /// const MESSAGE: &[u8] = b"hello, world!";
     /// let signature = private_key.sign(MESSAGE).expect("failed to sign.");
-    /// assert!(public_key.verify(&signature, MESSAGE));
+    /// assert!(public_key.verify(&signature, MESSAGE).is_ok());
     /// ```
     pub fn verify<B: AsRef<[u8]>>(&self, signature: &Signature<T>, data: B) -> LamportResult<()> {
         if signature.data.len() != self.one_values.len() {
