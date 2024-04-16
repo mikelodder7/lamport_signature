@@ -37,6 +37,54 @@ macro_rules! serde_impl {
     };
 }
 
+macro_rules! vec_impl {
+    ($name:ident) => {
+        impl<T: LamportDigest> From<$name<T>> for Vec<u8> {
+            fn from(value: $name<T>) -> Vec<u8> {
+                Self::from(&value)
+            }
+        }
+
+        impl<T: LamportDigest> From<&$name<T>> for Vec<u8> {
+            fn from(value: &$name<T>) -> Vec<u8> {
+                value.to_bytes()
+            }
+        }
+
+        impl<T: LamportDigest> TryFrom<Vec<u8>> for $name<T> {
+            type Error = LamportError;
+
+            fn try_from(value: Vec<u8>) -> LamportResult<Self> {
+                Self::try_from(value.as_slice())
+            }
+        }
+
+        impl<T: LamportDigest> TryFrom<&Vec<u8>> for $name<T> {
+            type Error = LamportError;
+
+            fn try_from(value: &Vec<u8>) -> LamportResult<Self> {
+                Self::try_from(value.as_slice())
+            }
+        }
+
+        impl<T: LamportDigest> TryFrom<&[u8]> for $name<T> {
+            type Error = LamportError;
+
+            fn try_from(value: &[u8]) -> LamportResult<Self> {
+                Self::from_bytes(value)
+            }
+        }
+
+        impl<T: LamportDigest> TryFrom<Box<[u8]>> for $name<T> {
+            type Error = LamportError;
+
+            fn try_from(value: Box<[u8]>) -> LamportResult<Self> {
+                Self::try_from(value.as_ref())
+            }
+        }
+    };
+}
+
 pub fn separate_one_and_zero_values(
     input: &[u8],
     bytes: usize,

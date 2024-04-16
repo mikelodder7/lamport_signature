@@ -19,6 +19,7 @@ pub struct SigningKey<T: LamportDigest> {
 }
 
 serde_impl!(SigningKey);
+vec_impl!(SigningKey);
 
 impl<T: LamportDigest> Zeroize for SigningKey<T> {
     fn zeroize(&mut self) {

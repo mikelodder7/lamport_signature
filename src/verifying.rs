@@ -17,6 +17,7 @@ pub struct VerifyingKey<T: LamportDigest> {
 }
 
 serde_impl!(VerifyingKey);
+vec_impl!(VerifyingKey);
 
 impl<T: LamportDigest> VerifyingKey<T> {
     /// Constructs a [VerifyingKey] from the byte sequence

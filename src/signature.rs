@@ -13,6 +13,7 @@ pub struct Signature<T: LamportDigest> {
 }
 
 serde_impl!(Signature);
+vec_impl!(Signature);
 
 impl<T: LamportDigest> Signature<T> {
     /// Constructs a [`Signature`] from a byte sequence
