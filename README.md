@@ -1,47 +1,47 @@
 # `lamport_signature`
 
-[![Crates.io](https://img.shields.io/crates/v/lamport_signature.svg)](https://crates.io/crates/lamport_signature)
-[![docs.rs](https://docs.rs/lamport_signature/badge.svg)](https://docs.rs/lamport_signature)
-[![Build Status](https://travis-ci.org/moriturus/lamport_signature.svg?branch=master)](https://travis-ci.org/moriturus/lamport_signature)
-[![GitHub license](https://img.shields.io/github/license/moriturus/lamport_signature.svg)](https://github.com/moriturus/lamport_signature/blob/master/LICENSE)
+[![Crates.io](https://img.shields.io/crates/v/lamport_signature_plus.svg)](https://crates.io/crates/lamport_signature_plus)
+[![docs.rs](https://docs.rs/lamport_signature/badge.svg)](https://docs.rs/lamport_signature_plus)
+[![GitHub license](https://img.shields.io/badge/license-Apache2.0.svg)](https://github.com/mikelodder7/lamport_signature_plus/blob/master/LICENSE)
 
-*lamport_signature* is a Rust implementation of the [Lamport one-time signature scheme](https://en.wikipedia.org/wiki/Lamport_signature).
-
-## Difference from the [lamport_sigs](https://github.com/SpinResearch/lamport_sigs.rs) crate
-
-- *lamport_signature* can use arbitrary fixed output size digest algorithm implemented in [RustCrypto/hashes](https://github.com/RustCrypto/hashes).
-- *lamport_signature* can use arbitrary RNG (*Random Number Generator*) implemented in [rust-lang-nursery/rand](https://github.com/rust-lang-nursery/rand).
+*lamport_signature_plus* is an implementation of the [Lamport one-time signature scheme](https://en.wikipedia.org/wiki/Lamport_signature).
 
 ## Documentation
 
-Documentation is [available here](https://docs.rs/lamport_signature).
+Documentation is [available here](https://docs.rs/lamport_signature_plus).
 
 ## Usage
 
 ```rust
-extern crate lamport_signature;
-extern crate sha2;
-extern crate rand;
-
-use lamport_signature::{PublicKey, PrivateKey, generate_keys};
+use lamport_signature::{VerifyingKey, SigningKey, LamportFixedDigest};
 use sha2::Sha256;
 use rand::thread_rng;
 
-let mut rng = thread_rng();
-let (mut private_key, public_key) = generate_keys::<Sha256, _>(&mut rng);
+let mut signing_key = SigningKey::<LamportFixedDigest<Sha256>>::random(thread_rng());
+let verifying_key = VerifyingKey::from(&signing_key);
 
-let signature = private_key.sign(b"Hello, World!").expect("signing failed");
+let signature = signing_key.sign(b"Hello, World!").expect("signing failed");
 
-assert!(public_key.verify(&signature, b"Hello, World!"));
+assert!(verifying_key.verify(&signature, b"Hello, World!").is_ok());
 ```
 
-## Bug Reporting
+This crate supports any hash function that implements the `Digest` trait from the `digest` crate or `ExtendableOutputFunction`. 
+The `SigningKey`, `VerifyingKey`, and `Signature` types are generic over the hash function used.
 
-Please report bugs either as pull requests or as issues in [the issue
-tracker](https://github.com/moriturus/lamport_signature). *lamport_signature* has a
-**full disclosure** vulnerability policy. **Please do NOT attempt to report
-any security vulnerability in this code privately to anybody.**
+# License
 
 ## License
 
-[MIT License](LICENSE).
+Licensed under either of
+
+* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+* MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+# Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally
+submitted for inclusion in the work by you, as defined in the Apache-2.0
+license, shall be licensed as above, without any additional terms or
+conditions.
