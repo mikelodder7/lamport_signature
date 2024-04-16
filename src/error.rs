@@ -4,7 +4,7 @@
 */
 use thiserror::Error;
 
-/// Errors in sign-verify scheme.
+/// Errors in lamport signing scheme.
 #[derive(Error, Debug)]
 pub enum LamportError {
     /// I/O error.

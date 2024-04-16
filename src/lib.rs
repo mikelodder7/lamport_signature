@@ -82,12 +82,20 @@ mod signature;
 mod signing;
 mod verifying;
 
+use rand::{CryptoRng, RngCore};
 pub use error::{LamportError, LamportResult};
 pub use hash::{LamportDigest, LamportExtendableDigest, LamportFixedDigest};
 pub use multi_vec::MultiVec;
 pub use signature::Signature;
 pub use signing::SigningKey;
 pub use verifying::VerifyingKey;
+
+/// Generate a new pair of keys.
+pub fn generate_keys<T: LamportDigest, R: RngCore + CryptoRng>(rng: R) -> (SigningKey<T>, VerifyingKey<T>) {
+    let sk = SigningKey::<T>::random(rng);
+    let pk = VerifyingKey::from(&sk);
+    (sk, pk)
+}
 
 #[cfg(test)]
 mod tests {
@@ -99,8 +107,7 @@ mod tests {
     #[test]
     fn key_bytes_round_trip() {
         let rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
-        let mut sk = SigningKey::<LamportFixedDigest<Sha3_256>>::random(rng);
-        let original_public_key = VerifyingKey::from(&sk);
+        let (mut sk, original_public_key) = generate_keys::<LamportFixedDigest<Sha3_256>, _>(rng);
 
         let bytes = original_public_key.to_bytes();
         let res = VerifyingKey::<LamportFixedDigest<Sha3_256>>::from_bytes(&bytes);
@@ -148,8 +155,7 @@ mod tests {
     #[test]
     fn sign_fixed() {
         let rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
-        let mut sk = SigningKey::<LamportFixedDigest<Sha3_256>>::random(rng);
-        let pk = VerifyingKey::from(&sk);
+        let (mut sk, pk) = generate_keys::<LamportFixedDigest<Sha3_256>, _>(rng);
 
         let message = b"hello, world!";
         let signature = sk.sign(message).unwrap();
@@ -160,8 +166,7 @@ mod tests {
     #[test]
     fn sign_xof() {
         let rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
-        let mut sk = SigningKey::<LamportExtendableDigest<Shake128>>::random(rng);
-        let pk = VerifyingKey::from(&sk);
+        let (mut sk, pk) = generate_keys::<LamportExtendableDigest<Shake128>, _>(rng);
 
         let message = b"hello, world!";
         let signature = sk.sign(message).unwrap();
