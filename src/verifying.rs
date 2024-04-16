@@ -4,7 +4,6 @@
 */
 use crate::utils::separate_one_and_zero_values;
 use crate::{LamportDigest, LamportError, LamportResult, MultiVec, Signature, SigningKey};
-use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
 /// A one-time signing public key.
@@ -17,34 +16,7 @@ pub struct VerifyingKey<T: LamportDigest> {
     pub(crate) algorithm: PhantomData<T>,
 }
 
-impl<T: LamportDigest> Serialize for VerifyingKey<T> {
-    fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        let bytes = self.to_bytes();
-        if s.is_human_readable() {
-            hex::encode(&bytes).serialize(s)
-        } else {
-            s.serialize_bytes(&bytes)
-        }
-    }
-}
-
-impl<'de, T: LamportDigest> Deserialize<'de> for VerifyingKey<T> {
-    fn deserialize<D>(d: D) -> Result<Self, D::Error>
-    where
-        D: serde::de::Deserializer<'de>,
-    {
-        let bytes = if d.is_human_readable() {
-            let hex_str = String::deserialize(d)?;
-            hex::decode(hex_str).map_err(serde::de::Error::custom)?
-        } else {
-            Vec::<u8>::deserialize(d)?
-        };
-        VerifyingKey::from_bytes(bytes).map_err(serde::de::Error::custom)
-    }
-}
+serde_impl!(VerifyingKey);
 
 impl<T: LamportDigest> VerifyingKey<T> {
     /// Constructs a [VerifyingKey] from the byte sequence
@@ -88,7 +60,7 @@ impl<T: LamportDigest> VerifyingKey<T> {
             .collect()
     }
 
-    /// Verifies the [Signature].
+    /// Verifies the [`Signature`].
     ///
     /// # Example
     ///

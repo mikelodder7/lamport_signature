@@ -1,25 +1,36 @@
-#![feature(test)]
-
-extern crate lamport_signature;
-extern crate rand;
-extern crate test;
-extern crate whirlpool;
-
-use lamport_signature::PrivateKey;
-use rand::OsRng;
-use test::Bencher;
 use whirlpool::Whirlpool;
+use criterion::*;
+use lamport_signature_plus::{LamportFixedDigest, SigningKey, VerifyingKey};
+use rand::SeedableRng;
+use rand_chacha::ChaChaRng;
 
-#[bench]
-fn bench_sign_then_verify_whirlpool_private_key(b: &mut Bencher) {
+fn bench_whirlpool(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Whirlpool>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Whirlpool", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportFixedDigest<Whirlpool>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Whirlpool", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Whirlpool>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Whirlpool", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Whirlpool>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
+
+criterion_group!(benches, bench_whirlpool);
+
+criterion_main!(benches);

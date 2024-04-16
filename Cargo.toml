@@ -20,9 +20,26 @@ thiserror = "1.0"
 zeroize = "1"
 
 [dev-dependencies]
+criterion = "0.5"
 rand_chacha = "0.3"
 sha2 = "0.10"
 sha3 = "0.10"
 blake2 = "0.10"
 whirlpool = "0.10"
+
+[[bench]]
+name = "blake2"
+harness = false
+
+[[bench]]
+name = "sha2"
+harness = false
+
+[[bench]]
+name = "sha3"
+harness = false
+
+[[bench]]
+name = "whirlpool"
+harness = false
 

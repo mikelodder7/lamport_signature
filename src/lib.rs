@@ -73,12 +73,13 @@
     rust_2018_idioms
 )]
 
+#[macro_use]
+mod utils;
 mod error;
 mod hash;
 mod multi_vec;
 mod signature;
 mod signing;
-mod utils;
 mod verifying;
 
 pub use error::{LamportError, LamportResult};

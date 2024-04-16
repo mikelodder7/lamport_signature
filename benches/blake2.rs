@@ -1,39 +1,63 @@
-#![feature(test)]
+use blake2::{Blake2b512, Blake2s256};
+use criterion::*;
+use lamport_signature_plus::{LamportFixedDigest, SigningKey, VerifyingKey};
+use rand::SeedableRng;
+use rand_chacha::ChaChaRng;
 
-extern crate blake2;
-extern crate lamport_signature;
-extern crate rand;
-extern crate test;
-
-use blake2::{Blake2b, Blake2s};
-use lamport_signature::PrivateKey;
-use rand::OsRng;
-use test::Bencher;
-
-#[bench]
-fn bench_sign_then_verify_blake2s_private_key(b: &mut Bencher) {
+fn bench_blake2s(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Blake2s>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Blake2s", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportFixedDigest<Blake2s256>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Blake2s", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Blake2s256>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Blake2s", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Blake2s256>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
 
-#[bench]
-fn bench_sign_then_verify_blake2b_private_key(b: &mut Bencher) {
+fn bench_blake2b(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Blake2b>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Blake2b", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportFixedDigest<Blake2b512>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Blake2b", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Blake2b512>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Blake2b512", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Blake2b512>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
+
+criterion_group!(benches, bench_blake2s, bench_blake2b);
+
+criterion_main!(benches);

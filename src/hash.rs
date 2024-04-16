@@ -81,7 +81,7 @@ where
     T: Default + ExtendableOutput + Update,
 {
     fn digest_size_in_bits() -> usize {
-        32
+        64
     }
 
     fn digest(data: &[u8]) -> Vec<u8> {

@@ -9,7 +9,7 @@ use std::ops::{
 };
 use zeroize::Zeroize;
 
-/// A multi-dimensional vector.
+/// A multi-dimensional vector. This is faster and simpler than using Vec<Vec<...>>
 #[derive(Debug)]
 pub struct MultiVec<T, const D: usize> {
     pub(crate) data: Vec<T>,

@@ -1,123 +1,145 @@
-#![feature(test)]
+use sha3::{Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256};
+use criterion::*;
+use lamport_signature_plus::{LamportExtendableDigest, LamportFixedDigest, SigningKey, VerifyingKey};
+use rand::SeedableRng;
+use rand_chacha::ChaChaRng;
 
-extern crate lamport_signature;
-extern crate rand;
-extern crate sha3;
-extern crate test;
-
-use lamport_signature::PrivateKey;
-use rand::OsRng;
-use sha3::{Keccak224, Keccak256, Keccak384, Keccak512, Sha3_224, Sha3_256, Sha3_384, Sha3_512};
-use test::Bencher;
-
-#[bench]
-fn bench_sign_then_verify_sha3_224_private_key(b: &mut Bencher) {
+fn bench_sha3_256(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Sha3_224>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Sha3_256", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportFixedDigest<Sha3_256>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Sha3_256", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Sha3_256>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Sha3_256", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Sha3_256>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
 
-#[bench]
-fn bench_sign_then_verify_sha3_256_private_key(b: &mut Bencher) {
+fn bench_sha3_384(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Sha3_256>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Sha3_384", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportFixedDigest<Sha3_384>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Sha3_384", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Sha3_384>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Sha3_384", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Sha3_384>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
 
-#[bench]
-fn bench_sign_then_verify_sha3_384_private_key(b: &mut Bencher) {
+fn bench_sha3_512(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Sha3_384>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Sha3_512", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportFixedDigest<Sha3_512>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Sha3_512", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Sha3_512>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Sha3_512", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportFixedDigest<Sha3_512>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
 
-#[bench]
-fn bench_sign_then_verify_sha3_512_private_key(b: &mut Bencher) {
+fn bench_shake128(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Sha3_512>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Shake128", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportExtendableDigest<Shake128>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Shake128", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportExtendableDigest<Shake128>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Shake128", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportExtendableDigest<Shake128>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
 
-#[bench]
-fn bench_sign_then_verify_keccak_224_private_key(b: &mut Bencher) {
+fn bench_shake256(c: &mut Criterion) {
     const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Keccak224>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
+    c.bench_function("New Signing Key with Shake256", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let _ = SigningKey::<LamportExtendableDigest<Shake256>>::random(rng);
+        });
+    });
+    c.bench_function("Sign with Shake256", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportExtendableDigest<Shake256>>::random(rng);
+            sk.sign(DATA).unwrap();
+        });
+    });
+    c.bench_function("Verify with Shake256", |b| {
+        b.iter(|| {
+            let rng = ChaChaRng::from_entropy();
+            let mut sk = SigningKey::<LamportExtendableDigest<Shake256>>::random(rng);
+            let pk = VerifyingKey::from(&sk);
+            let signature = sk.sign(DATA).unwrap();
+            pk.verify(&signature, DATA).unwrap();
+        });
     });
 }
 
-#[bench]
-fn bench_sign_then_verify_keccak_256_private_key(b: &mut Bencher) {
-    const DATA: &'static [u8] = b"hello, world!";
 
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Keccak256>::new(&mut rng);
-        let public_key = private_key.public_key();
+criterion_group!(benches, bench_sha3_256, bench_sha3_384, bench_sha3_512, bench_shake128, bench_shake256);
 
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
-    });
-}
-
-#[bench]
-fn bench_sign_then_verify_keccak_384_private_key(b: &mut Bencher) {
-    const DATA: &'static [u8] = b"hello, world!";
-
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Keccak384>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
-    });
-}
-
-#[bench]
-fn bench_sign_then_verify_keccak_512_private_key(b: &mut Bencher) {
-    const DATA: &'static [u8] = b"hello, world!";
-
-    b.iter(|| {
-        let mut rng = OsRng::new().unwrap();
-        let mut private_key = PrivateKey::<Keccak512>::new(&mut rng);
-        let public_key = private_key.public_key();
-
-        let signature = private_key.sign(DATA).unwrap();
-        public_key.verify(&signature, DATA)
-    });
-}
+criterion_main!(benches);
