@@ -82,16 +82,18 @@ mod signature;
 mod signing;
 mod verifying;
 
-use rand::{CryptoRng, RngCore};
 pub use error::{LamportError, LamportResult};
 pub use hash::{LamportDigest, LamportExtendableDigest, LamportFixedDigest};
 pub use multi_vec::MultiVec;
+use rand::{CryptoRng, RngCore};
 pub use signature::Signature;
 pub use signing::SigningKey;
 pub use verifying::VerifyingKey;
 
 /// Generate a new pair of keys.
-pub fn generate_keys<T: LamportDigest, R: RngCore + CryptoRng>(rng: R) -> (SigningKey<T>, VerifyingKey<T>) {
+pub fn generate_keys<T: LamportDigest, R: RngCore + CryptoRng>(
+    rng: R,
+) -> (SigningKey<T>, VerifyingKey<T>) {
     let sk = SigningKey::<T>::random(rng);
     let pk = VerifyingKey::from(&sk);
     (sk, pk)
@@ -101,6 +103,7 @@ pub fn generate_keys<T: LamportDigest, R: RngCore + CryptoRng>(rng: R) -> (Signi
 mod tests {
     use super::*;
     use rand::SeedableRng;
+    use sha2::Sha256;
     use sha3::{Sha3_256, Sha3_512, Shake128};
     const SEED: [u8; 32] = [3u8; 32];
 
@@ -172,5 +175,44 @@ mod tests {
         let signature = sk.sign(message).unwrap();
         assert!(pk.verify(&signature, message).is_ok());
         assert!(!pk.verify(&signature, b"hello, world").is_ok());
+    }
+
+    #[test]
+    fn vsss_key_round_trip() {
+        let mut rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
+        let sk = SigningKey::<LamportFixedDigest<Sha256>>::random(&mut rng);
+        let res = sk.split(3, 5, &mut rng);
+        assert!(res.is_ok());
+        let shares = res.unwrap();
+
+        let res = SigningKey::<LamportFixedDigest<Sha256>>::combine(&shares[0..3]);
+        assert!(res.is_ok());
+        let restored_key = res.unwrap();
+        assert_eq!(restored_key.to_bytes(), sk.to_bytes());
+
+        let res = SigningKey::<LamportFixedDigest<Sha256>>::combine(&shares[2..5]);
+        assert!(res.is_ok());
+        let restored_key = res.unwrap();
+        assert_eq!(restored_key.to_bytes(), sk.to_bytes());
+
+        let res = SigningKey::<LamportFixedDigest<Sha256>>::combine(&shares[0..2]);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn partial_sign() {
+        let mut rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
+        let (sk, pk) = generate_keys::<LamportFixedDigest<Sha256>, _>(&mut rng);
+        let message = b"hello, world!";
+        let mut shares = sk.split(3, 5, &mut rng).unwrap();
+        let signatures = shares
+            .iter_mut()
+            .map(|share| share.sign(message).unwrap())
+            .collect::<Vec<_>>();
+
+        let res = Signature::combine(&signatures[..3]);
+        assert!(res.is_ok());
+        let signature = res.unwrap();
+        assert!(pk.verify(&signature, message).is_ok());
     }
 }

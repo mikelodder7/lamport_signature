@@ -10,6 +10,9 @@ pub enum LamportError {
     /// I/O error.
     #[error("I/O error: {0}")]
     IoError(#[from] std::io::Error),
+    /// Vsss error.
+    #[error("Vsss error: {0}")]
+    VsssError(vsss_rs::Error),
     /// Private key was reused.
     #[error("Private key was reused.")]
     PrivateKeyReuseError,
@@ -19,6 +22,21 @@ pub enum LamportError {
     /// Invalid signature bytes.
     #[error("Invalid signature bytes.")]
     InvalidSignatureBytes,
+    /// General Purpose errors
+    #[error("General error: {0}")]
+    General(String),
+}
+
+impl From<vsss_rs::Error> for LamportError {
+    fn from(err: vsss_rs::Error) -> Self {
+        LamportError::VsssError(err)
+    }
+}
+
+impl From<&vsss_rs::Error> for LamportError {
+    fn from(err: &vsss_rs::Error) -> Self {
+        LamportError::VsssError(*err)
+    }
 }
 
 /// Result type for Lamport errors.
