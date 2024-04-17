@@ -28,6 +28,29 @@ assert!(verifying_key.verify(&signature, b"Hello, World!").is_ok());
 This crate supports any hash function that implements the `Digest` trait from the `digest` crate or `ExtendableOutputFunction`. 
 The `SigningKey`, `VerifyingKey`, and `Signature` types are generic over the hash function used.
 
+# Threshold Signatures
+This crate supports threshold signing by first splitting the `SigningKey` into shares and creating 
+`SignatureShare`s from each share. The `SignatureShare`s can then be combined into a `Signature` using the `combine` method.
+
+```rust
+use lamport_signature::{VerifyingKey, SigningKey, LamportFixedDigest};
+use sha2::Sha256;
+
+let mut rng = rand_chacha::ChaCha8Rng::from_seed(SEED);
+let (sk, pk) = generate_keys::<LamportFixedDigest<Sha256>, _>(&mut rng);
+let message = b"hello, world!";
+let mut shares = sk.split(3, 5, &mut rng).unwrap();
+let signatures = shares
+    .iter_mut()
+    .map(|share| share.sign(message).unwrap())
+    .collect::<Vec<_>>();
+
+let res = Signature::combine(&signatures[..3]);
+assert!(res.is_ok());
+let signature = res.unwrap();
+assert!(pk.verify(&signature, message).is_ok());
+```
+
 # License
 
 ## License

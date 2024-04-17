@@ -86,8 +86,8 @@ pub use error::{LamportError, LamportResult};
 pub use hash::{LamportDigest, LamportExtendableDigest, LamportFixedDigest};
 pub use multi_vec::MultiVec;
 use rand::{CryptoRng, RngCore};
-pub use signature::Signature;
-pub use signing::SigningKey;
+pub use signature::{Signature, SignatureShare};
+pub use signing::{SigningKey, SigningKeyShare};
 pub use verifying::VerifyingKey;
 
 /// Generate a new pair of keys.
